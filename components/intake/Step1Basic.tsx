@@ -1,3 +1,22 @@
+/**
+ * Step1Basic.tsx
+ *
+ * AI問診フォームの第1ステップ（基本情報入力画面）
+ *
+ * 役割：
+ * ・患者様の基本情報を入力するフォームを表示
+ * ・氏名、ふりがな、生年月日、性別、連絡先（電話・メール）、住所を収集
+ * ・必須項目のバリデーション表示
+ * ・入力内容の説明・ガイダンスを提供
+ *
+ * このコンポーネントは
+ * ・フォームの state を自分で持たない
+ * ・react-hook-form の control を受け取り、FormField で各項目を定義
+ * ・バリデーションは schema（intakeSchema.ts）側で定義されている
+ *
+ * 「UI 表示・フォーム項目定義」専用コンポーネント
+ */
+
 'use client';
 
 import { Control } from 'react-hook-form';
@@ -6,6 +25,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { IntakeFormData } from '@/lib/types/intake';
 
+/**
+ * Step1Basic が受け取る props
+ *
+ * control : react-hook-form の control（フォーム状態管理用）
+ */
 interface Step1BasicProps {
   control: Control<IntakeFormData>;
 }
@@ -23,6 +47,7 @@ const prefectures = [
 export function Step1Basic({ control }: Step1BasicProps) {
   return (
     <div className="space-y-6">
+      {/* 氏名・ふりがな */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -65,6 +90,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
         />
       </div>
 
+      {/* 生年月日・性別 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -112,6 +138,30 @@ export function Step1Basic({ control }: Step1BasicProps) {
         />
       </div>
 
+      {/* 職業 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FormField
+          control={control}
+          name="occupation"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold">
+                職業
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="製造業・士業など"
+                  {...field}
+                  className="text-base"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* 連絡先（電話・メール） */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -161,6 +211,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
         />
       </div>
 
+      {/* 住所（都道府県・市区町村） */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -206,6 +257,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
         />
       </div>
 
+      {/* 入力ガイダンス */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
           <span className="font-semibold">ご入力について：</span>

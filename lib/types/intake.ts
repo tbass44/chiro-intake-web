@@ -3,6 +3,7 @@ export interface BasicInfo {
   furigana: string;
   dob: string;
   sex: '男' | '女' | 'その他' | '回答しない';
+  occupation?: string;
   phone: string;
   email: string;
   prefecture?: string;
@@ -38,7 +39,9 @@ export interface Lifestyle {
   consent: boolean;
 }
 
-export interface IntakeFormData extends BasicInfo, Symptoms, MedicalHistory, Lifestyle {}
+// IntakeFormData は intakeSchema.ts から生成される型を使用
+// 型の一貫性を保つため、ここでは再エクスポートのみ
+export type { IntakeFormData } from '@/lib/validation/intakeSchema';
 
 export interface ApiResponse {
   success: boolean;

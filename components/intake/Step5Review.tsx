@@ -1,3 +1,22 @@
+/**
+ * Step5Review.tsx
+ *
+ * AI問診フォームの最終ステップ（確認・送信画面）
+ *
+ * 役割：
+ * ・これまで入力された全フォーム内容を一覧表示する
+ * ・各セクションごとに「編集（該当ステップへ戻る）」を提供
+ * ・必須項目がすべて入力されているかを最終チェック
+ * ・送信処理のトリガー（onSubmit）を呼び出す
+ * ・送信成功／失敗の結果表示を行う
+ *
+ * このコンポーネントは
+ * ・フォームの state を自分で持たない
+ * ・useWatch を使って react-hook-form の値を参照するだけ
+ *
+ * ＝ 完全に「表示・確認・分岐」専用コンポーネント
+ */
+
 'use client';
 
 import { Control, useWatch } from 'react-hook-form';
@@ -8,6 +27,15 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, FileCheck, AlertCircle, CheckCircle } from 'lucide-react';
 import { IntakeFormData } from '@/lib/types/intake';
 
+/**
+ * Step5Review が受け取る props
+ *
+ * control       : react-hook-form の control（useWatch 用）
+ * onEdit(step)  : 編集ボタン押下時に、指定ステップへ戻す
+ * onSubmit      : 最終送信処理（page.tsx 側）
+ * isSubmitting  : 送信中フラグ（多重送信防止）
+ * submitResult  : 送信結果（成功／失敗／PDF URL など）
+ */
 interface Step5ReviewProps {
   control: Control<IntakeFormData>;
   onEdit: (step: number) => void;
@@ -23,8 +51,22 @@ export function Step5Review({
   isSubmitting, 
   submitResult 
 }: Step5ReviewProps) {
+    /**
+   * useWatch によりフォーム全体の現在値を取得
+   *
+   * ・state は保持しない
+   * ・変更があれば自動で再描画される
+   * ・確認画面専用の安全な読み取り方法
+   */
   const formData = useWatch({ control });
 
+    /**
+   * 送信成功後の完了画面
+   *
+   * ・成功メッセージ表示
+   * ・PDF ダウンロードリンク（あれば）
+   * ・次の案内文言を表示
+   */
   if (submitResult?.success) {
     return (
       <div className="text-center py-8">
@@ -35,6 +77,8 @@ export function Step5Review({
         <p className="text-gray-600 mb-6">
           ご入力いただきありがとうございます。担当者が内容を確認後、ご連絡いたします。
         </p>
+
+        {/* PDF ダウンロード（任意） */}
         {submitResult.pdfUrl && (
           <Button
             onClick={() => window.open(submitResult.pdfUrl, '_blank')}
@@ -54,6 +98,14 @@ export function Step5Review({
     );
   }
 
+    /**
+   * 値を人が読める文字列に変換する関数
+   *
+   * ・未入力 → 「未入力」
+   * ・配列 → カンマ区切り
+   * ・boolean → はい / いいえ
+   * ・number → 数値文字列
+   */
   const formatValue = (value: any): string => {
     if (value === undefined || value === null || value === '') return '未入力';
     if (Array.isArray(value)) {
@@ -68,6 +120,31 @@ export function Step5Review({
     return value.toString();
   };
 
+    /**
+   * 必須項目チェック用の空判定関数
+   *
+   * ・空文字
+   * ・false
+   * ・空配列
+   * を「未入力」とみなす
+   */
+  const isEmptyValue = (value: any): boolean => {
+    if (value === undefined || value === null || value === '') return true;
+    if (typeof value === 'boolean' && value === false) return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+    return false;
+  };
+
+    /**
+   * 表示セクション定義
+   *
+   * ・title : セクション名
+   * ・step  : 編集時に戻るステップ番号
+   * ・fields: 表示項目（ラベル／値／必須）
+   *
+   * ※ UI 表示専用
+   * ※ schema とは直接連動しない
+   */
   const sections = [
     {
       title: '基本情報',
@@ -77,6 +154,7 @@ export function Step5Review({
         { label: 'ふりがな', value: formData.furigana, required: true },
         { label: '生年月日', value: formData.dob, required: true },
         { label: '性別', value: formData.sex, required: false },
+        { label: '職業', value: formData.occupation, required: false },
         { label: '電話番号', value: formData.phone, required: true },
         { label: 'メールアドレス', value: formData.email, required: true },
         { label: '都道府県', value: formData.prefecture, required: false },
@@ -123,14 +201,22 @@ export function Step5Review({
     }
   ];
 
+    /**
+   * 全必須項目が入力済みかをチェック
+   *
+   * ・送信ボタン有効／無効判定
+   * ・警告表示の制御に使用
+   */
   const hasRequiredFields = sections.every(section =>
-    section.fields.filter(field => field.required).every(field => 
-      field.value !== undefined && field.value !== null && field.value !== '' && field.value !== false
-    )
+    section.fields.filter(field => field.required).every(field => !isEmptyValue(field.value))
   );
 
+    /**
+   * 確認画面のメイン表示
+   */
   return (
     <div className="space-y-6">
+      {/* タイトル */}
       <div className="text-center mb-6">
         <FileCheck className="h-12 w-12 text-blue-600 mx-auto mb-3" />
         <h3 className="text-xl font-bold text-gray-900">入力内容の確認</h3>
@@ -139,6 +225,7 @@ export function Step5Review({
         </p>
       </div>
 
+      {/* 必須未入力警告 */}
       {!hasRequiredFields && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 text-yellow-800">
@@ -151,6 +238,7 @@ export function Step5Review({
         </div>
       )}
 
+      {/* 各セクション表示 */}
       {sections.map((section, sectionIndex) => (
         <Card key={sectionIndex} className="shadow-sm">
           <CardHeader className="pb-3">
@@ -182,7 +270,7 @@ export function Step5Review({
                     )}
                   </div>
                   <div className="flex-1 text-right">
-                    {field.required && (!field.value || field.value === '' || field.value === false) ? (
+                    {field.required && isEmptyValue(field.value) ? (
                       <Badge variant="destructive" className="text-xs">
                         未入力
                       </Badge>
@@ -201,6 +289,7 @@ export function Step5Review({
 
       <Separator />
 
+      {/* 注意文 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
           <span className="font-semibold">送信について：</span>
@@ -209,6 +298,7 @@ export function Step5Review({
         </p>
       </div>
 
+      {/* 送信エラー表示 */}
       {submitResult && !submitResult.success && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 text-red-800">
@@ -221,6 +311,7 @@ export function Step5Review({
         </div>
       )}
 
+      {/* 送信ボタン */}
       <div className="text-center">
         <Button
           onClick={onSubmit}

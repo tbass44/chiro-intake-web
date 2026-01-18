@@ -1,3 +1,21 @@
+/**
+ * app/intake/page.tsx
+ *
+ * AI問診フォーム全体の「画面統括・進行管理ページ」
+ *
+ * 役割：
+ * ・各 Step コンポーネントを切り替えて表示する
+ * ・現在のステップ番号をもとに画面構成を決める
+ * ・ステップ間のバリデーション・遷移制御を行う
+ * ・最終送信処理（API呼び出し）を担当する
+ *
+ * このファイルは「入力項目の中身」は持たない。
+ * 実際のフォーム状態・保存・バリデーションは
+ * useIntakeForm（司令塔）にすべて委譲している。
+ *
+ * ＝ このファイルは「進行役・組み立て係」
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -13,6 +31,13 @@ import { submitIntakeForm } from '@/lib/utils/fetcher';
 import { toast } from 'sonner';
 import { ApiResponse } from '@/lib/types/intake';
 
+/**
+ * 各ステップのタイトル・説明文定義
+ *
+ * ・UI 表示専用
+ * ・step番号（1〜5）と index（0〜4）が対応
+ * ・項目追加時はここも合わせて修正する
+ */
 const stepConfig = [
   {
     title: '基本情報',
@@ -37,18 +62,53 @@ const stepConfig = [
 ];
 
 export default function IntakePage() {
+    /**
+   * useIntakeForm から取得するもの
+   *
+   * form        : react-hook-form の制御オブジェクト
+   * currentStep : 現在のステップ番号（1〜5）
+   * isLoaded    : localStorage 復元完了フラグ
+   * nextStep    : 次のステップへ進む
+   * prevStep    : 前のステップへ戻る
+   * goToStep   : 任意のステップへ移動（レビュー画面用）
+   * clearStorage: localStorage の問診データ削除
+   */
   const { form, currentStep, isLoaded, nextStep, prevStep, goToStep, clearStorage } = useIntakeForm();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<ApiResponse | null>(null);
 
+    /**
+   * 送信中フラグ（多重送信防止）
+   */
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+// フォーム送信結果（成功 / 失敗）を保持するstate
+// 初期状態では結果が存在しないため null を許可している
+  const [submitResult, setSubmitResult] = useState<ApiResponse | null>(null);
+  
+  /**
+   * 現在ステップに対応するタイトル・説明文
+   */
   const currentConfig = stepConfig[currentStep - 1];
 
+  
+  /**
+   * 現在のステップで「必須項目だけ」バリデーションをかける
+   *
+   * ・次へ進むとき専用
+   * ・全体 validation ではない
+   */
   const validateCurrentStep = async () => {
     const stepFields = getStepFields(currentStep);
     const isValid = await form.trigger(stepFields);
     return isValid;
   };
 
+    /**
+   * ステップごとの「必須フィールド定義」
+   *
+   * ・ここに含まれる項目だけが「次へ」押下時にチェックされる
+   * ・schema 側の必須定義とは役割が違う点に注意
+   * ・UI進行制御用の軽量チェック
+   */
   const getStepFields = (step: number) => {
     switch (step) {
       case 1:
@@ -56,7 +116,7 @@ export default function IntakePage() {
       case 2:
         return ['chiefComplaint', 'painScale'] as const;
       case 3:
-        return [] as const; // No required fields in step 3
+        return [] as const; // Step3 は必須項目なし
       case 4:
         return ['goal', 'consent'] as const;
       default:
@@ -64,6 +124,13 @@ export default function IntakePage() {
     }
   };
 
+    /**
+   * 「次へ」ボタン押下時の処理
+   *
+   * ・現在ステップの必須項目をチェック
+   * ・OKなら nextStep()
+   * ・NGならトースト表示
+   */
   const handleNext = async () => {
     const isValid = await validateCurrentStep();
     if (isValid) {
@@ -73,6 +140,14 @@ export default function IntakePage() {
     }
   };
 
+    /**
+   * 最終送信処理
+   *
+   * ・全項目バリデーション
+   * ・API へ送信
+   * ・成功時：localStorage クリア
+   * ・失敗時：エラーメッセージ表示
+   */
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitResult(null);
@@ -107,6 +182,12 @@ export default function IntakePage() {
     }
   };
 
+    /**
+   * 現在のステップに応じて表示する Step コンポーネントを切り替える
+   *
+   * ・各 Step は UI 専用
+   * ・control だけを渡す
+   */
   const renderCurrentStep = () => {
     if (!isLoaded) {
       return (
@@ -141,24 +222,49 @@ export default function IntakePage() {
     }
   };
 
+    /**
+   * 「次へ」ボタンを無効化する条件
+   *
+   * ・未ロード中
+   * ・必須フィールドが空
+   * ・送信中
+   */
   const isNextDisabled = () => {
     if (!isLoaded) return true;
     if (currentStep === 5) return false;
     
     const stepFields = getStepFields(currentStep);
-    const watchedValues = form.watch(stepFields);
+    if (stepFields.length === 0) return false;
+    
+    const formValues = form.getValues();
     
     return stepFields.some(field => {
-      const value = watchedValues[stepFields.indexOf(field)];
-      return value === undefined || value === null || value === '' || value === false;
+      const value = formValues[field];
+      // 文字列の場合は空文字チェック、booleanの場合はfalseチェック
+      if (typeof value === 'string') {
+        return !value || value.trim() === '';
+      }
+      if (typeof value === 'boolean') {
+        return value === false;
+      }
+      if (typeof value === 'number') {
+        return value === 0;
+      }
+      return value === undefined || value === null;
     });
   };
 
+    /**
+   * 次ボタンのラベル切り替え
+   */
   const getNextLabel = () => {
     if (currentStep === 5) return '送信';
     return '次へ';
   };
 
+    /**
+   * localStorage 復元前のローディング画面
+   */
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
@@ -170,9 +276,20 @@ export default function IntakePage() {
     );
   }
 
+    /**
+   * 実際のフォーム描画
+   *
+   * ・Form / form タグは react-hook-form 用のラッパー
+   * ・submit は JS 側で制御するため preventDefault
+   * ・StepShell がナビゲーション・レイアウトを担当
+   */
   return (
     <Form {...form}>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+      >
         <StepShell
           currentStep={currentStep}
           totalSteps={5}
