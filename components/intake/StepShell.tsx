@@ -1,7 +1,7 @@
 /**
  * StepShell.tsx
  *
- * 問診フォーム全体の「共通レイアウト・ナビゲーション担当コンポーネント」
+ * フォーム全体の「共通レイアウト・ナビゲーション担当コンポーネント」
  *
  * 役割：
  * ・ヘッダー（院名・フォーム名・保存表示）を表示
@@ -19,11 +19,14 @@
  * そのまま UI に反映する「純粋なレイアウト部品」。
  */
 
+'use client';
+
 import { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StepIndicator } from '@/components/ui/StepIndicator';
-import { ArrowLeft, ArrowRight, Save, Stethoscope } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Stethoscope, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -44,6 +47,8 @@ import { cn } from '@/lib/utils';
  *
  * showSave      : 保存表示を出すかどうか
  * onSave        : 保存ボタン押下時処理（任意）
+ * showHomeButton: ホームへ戻るボタンを表示するかどうか
+ * onHomeClick   : ホームへ戻るボタン押下時処理（任意、未指定時は自動でlocalStorageクリア）
  */
 
 interface StepShellProps {
@@ -59,6 +64,8 @@ interface StepShellProps {
   nextLabel?: string;
   showSave?: boolean;
   onSave?: () => void;
+  showHomeButton?: boolean;
+  onHomeClick?: () => void;
 }
 
 /**
@@ -88,11 +95,46 @@ export function StepShell({
   nextLabel = '次へ',
   showSave = true,
   onSave,
+  showHomeButton = true,
+  onHomeClick,
 }: StepShellProps) {
+  const router = useRouter();
 
     // 最初・最後のステップ判定（UI制御用）
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
+
+  /**
+   * ホームへ戻るボタン押下時の処理
+   *
+   * ・確認ダイアログを表示
+   * ・OK の場合のみ localStorage をクリアしてトップページへ遷移
+   * ・キャンセルの場合は何もしない
+   */
+  const handleHomeClick = () => {
+    // 確認ダイアログを表示
+    const confirmed = window.confirm(
+      '入力途中の内容は保存されません。\nホームへ戻りますか？'
+    );
+
+    if (!confirmed) {
+      // キャンセル時は何もしない
+      return;
+    }
+
+    // OK の場合のみ処理を実行
+    if (onHomeClick) {
+      onHomeClick();
+    } else {
+      // デフォルト動作：localStorage をクリアしてから遷移
+      try {
+        localStorage.removeItem('intake:v1');
+      } catch (error) {
+        console.error('Failed to clear localStorage:', error);
+      }
+    }
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -103,13 +145,27 @@ export function StepShell({
       <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {/* ホームへ戻るボタン */}
+              {showHomeButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleHomeClick}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>ホームへ戻る</span>
+                </Button>
+              )}
 
-            {/* ロゴ・タイトル */}
-            <div className="flex items-center space-x-3">
-              <Stethoscope className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-xl font-bold text-blue-900">カイロシガ整体院</h1>
-                <p className="text-sm text-blue-600">初回AI問診フォーム</p>
+              {/* ロゴ・タイトル */}
+              <div className="flex items-center space-x-3">
+                <Stethoscope className="h-8 w-8 text-blue-600" />
+                <div>
+                  <h1 className="text-xl font-bold text-blue-900">カイロシガ整体院</h1>
+                  <p className="text-sm text-blue-600">初回AIヒアリングナビフォーム</p>
+                </div>
               </div>
             </div>
 

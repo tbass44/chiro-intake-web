@@ -1,7 +1,7 @@
 /**
  * app/intake/page.tsx
  *
- * AI問診フォーム全体の「画面統括・進行管理ページ」
+ * AIヒアリングナビフォーム全体の「画面統括・進行管理ページ」
  *
  * 役割：
  * ・各 Step コンポーネントを切り替えて表示する
@@ -29,7 +29,9 @@ import { Step5Review } from '@/components/intake/Step5Review';
 import { useIntakeForm } from '@/lib/hooks/useIntakeForm';
 import { submitIntakeForm } from '@/lib/utils/fetcher';
 import { toast } from 'sonner';
-import { ApiResponse } from '@/lib/types/intake';
+import { ApiResponse, IntakeFormData } from '@/lib/types/intake';
+import { useRouter } from 'next/navigation';
+
 
 /**
  * 各ステップのタイトル・説明文定義
@@ -53,7 +55,7 @@ const stepConfig = [
   },
   {
     title: '生活習慣・目標',
-    description: '生活習慣と治療の目標についてお聞かせください',
+    description: '生活習慣と今後の目標についてお聞かせください',
   },
   {
     title: '確認・送信',
@@ -74,7 +76,7 @@ export default function IntakePage() {
    * clearStorage: localStorage の問診データ削除
    */
   const { form, currentStep, isLoaded, nextStep, prevStep, goToStep, clearStorage } = useIntakeForm();
-
+  const router = useRouter();
     /**
    * 送信中フラグ（多重送信防止）
    */
@@ -148,39 +150,47 @@ export default function IntakePage() {
    * ・成功時：localStorage クリア
    * ・失敗時：エラーメッセージ表示
    */
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setSubmitResult(null);
+    const handleSubmit = async () => {
+      setIsSubmitting(true);
+      setSubmitResult(null);
+    
+      try {
+        // 全体バリデーション
+        const isValid = await form.trigger();
+        // バリデーションに失敗した場合はエラーメッセージを表示
+        if (!isValid) {
+          toast.error('入力内容に不備があります。確認してください。');
+          return;
+        }
+    
+        const formData = form.getValues();
+    
+        // ★ ここで FastAPI を直接叩く
+        const res = await fetch("http://localhost:8000/api/intake", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+    
+        // ★ 成功・失敗をここで判定
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || '送信に失敗しました');
+        }
 
-    try {
-      const isValid = await form.trigger();
-      if (!isValid) {
-        toast.error('入力内容に不備があります。確認してください。');
-        return;
+        // ★ 成功したら完了画面へ
+        router.push('/intake/complete');
+    
+        // テストなのでここでは success 扱いしない
+      } catch (error) {
+        console.error('FastAPI submit error:', error);
+        toast.error('FastAPI通信エラー');
+      } finally {
+        setIsSubmitting(false);
       }
-
-      const formData = form.getValues();
-      const result = await submitIntakeForm(formData);
-      
-      setSubmitResult(result);
-      
-      if (result.success) {
-        toast.success('問診フォームを送信しました');
-        clearStorage();
-      } else {
-        toast.error(result.message || '送信中にエラーが発生しました');
-      }
-    } catch (error) {
-      console.error('Submit error:', error);
-      setSubmitResult({
-        success: false,
-        message: 'ネットワークエラーが発生しました。もう一度お試しください。',
-      });
-      toast.error('送信に失敗しました');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
 
     /**
    * 現在のステップに応じて表示する Step コンポーネントを切り替える
@@ -301,6 +311,7 @@ export default function IntakePage() {
           nextDisabled={isNextDisabled() || isSubmitting}
           nextLabel={getNextLabel()}
           showSave={currentStep < 5}
+          showHomeButton={!submitResult?.success}
         >
           {renderCurrentStep()}
         </StepShell>

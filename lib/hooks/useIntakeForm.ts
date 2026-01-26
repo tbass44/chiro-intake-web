@@ -1,7 +1,7 @@
 /**
  * useIntakeForm
  * ------------------------------------------------------
- * 問診フォーム全体を管理するカスタムフック。
+ * フォーム全体を管理するカスタムフック。
  *
  * 【役割】
  * - フォーム状態の管理（react-hook-form）
@@ -29,7 +29,7 @@ import { intakeFormSchema, type IntakeFormData } from '@/lib/validation/intakeSc
 // フォーム構造を変更した場合は v2 に上げる想定
 const STORAGE_KEY = 'intake:v1';
 
-// 問診フォームの初期状態
+// フォームの初期状態
 // 新規入力時、または保存データが無い場合に使われる
 const defaultValues: IntakeFormData = {
   name: '',
@@ -67,7 +67,7 @@ export function useIntakeForm() {
    /**
    * currentStep
    * --------------------------------------------------
-   * 現在表示している問診ステップ番号
+   * 現在表示しているステップ番号
    * （1: 基本情報, 2: 症状, ...）
    */
   const [currentStep, setCurrentStep] = useState(1);

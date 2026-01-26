@@ -1,7 +1,7 @@
 /**
  * Step5Review.tsx
  *
- * AI問診フォームの最終ステップ（確認・送信画面）
+ * AIヒアリングナビフォームの最終ステップ（確認・送信画面）
  *
  * 役割：
  * ・これまで入力された全フォーム内容を一覧表示する
@@ -72,7 +72,7 @@ export function Step5Review({
       <div className="text-center py-8">
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
         <h3 className="text-2xl font-bold text-green-900 mb-2">
-          問診フォームを送信しました
+          フォームを送信しました
         </h3>
         <p className="text-gray-600 mb-6">
           ご入力いただきありがとうございます。担当者が内容を確認後、ご連絡いたします。
@@ -319,7 +319,7 @@ export function Step5Review({
           size="lg"
           className="px-12 py-3 text-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
         >
-          {isSubmitting ? '送信中...' : '問診フォームを送信'}
+          {isSubmitting ? '送信中...' : 'フォームを送信'}
         </Button>
       </div>
     </div>

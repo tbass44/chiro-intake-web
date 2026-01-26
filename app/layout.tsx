@@ -11,9 +11,8 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: 'カイロシガ整体院｜AI問診',
-  description: 'カイロシガ整体院の初回AI問診フォーム',
-  lang: 'ja',
+  title: 'カイロシガ整体院｜AIヒアリングナビ',
+  description: 'AIヒアリングナビは、AIを活用してお身体の状態やお悩みを整理するサポートチェックサービスです。ご入力いただいた内容は、施術やサポートの参考として活用されます。',
 };
 
 // Placeholder ClerkProvider component

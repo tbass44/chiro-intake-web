@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiUrl = `${backendUrl}/api/intake`;
+    const apiUrl = `${backendUrl}/intake`;
     console.log('Proxying request to:', apiUrl);
 
     // Forward the request to the FastAPI backend
@@ -56,8 +56,7 @@ export async function POST(request: NextRequest) {
     // Return the backend response
     return NextResponse.json({
       success: true,
-      message: '問診フォームを正常に送信しました。',
-      ...data
+      message: data.summary ?? 'フォームを送信しました。',
     });
 
   } catch (error) {
