@@ -189,7 +189,7 @@ export function Step2Symptoms({ control }: Step2SymptomsProps) {
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
           <span className="font-semibold">症状について：</span>
-          詳しい症状の情報をいただくことで、より適切な治療プランをご提案できます。気になることがあれば遠慮なくご記入ください。
+          詳しい症状の情報をいただくことで、より適切なケアプランをご提案できます。気になることがあれば遠慮なくご記入ください。
         </p>
       </div>
     </div>

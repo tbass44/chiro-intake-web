@@ -56,7 +56,15 @@ const LABELS: Record<string, string> = {
 type IntakeDetail = {
   id: number;                     // DBのID
   created_at: string;             // 受付日時
-  payload: Record<string, any>;   // ヒアリング内容（キーは固定しない）
+  // FastAPI 側では payload ではなく raw というキーで返される
+  raw: Record<string, any>;
+  // [追加] 管理者向け summary
+  summary?: {
+    red_flags?: string[];
+    clinical_focus?: string | null;
+    stress_level?: string | null;
+    sleep_trouble?: boolean | null;
+  };
 };
 
 export default function AdminIntakeDetailPage() {
@@ -119,11 +127,19 @@ export default function AdminIntakeDetailPage() {
     return <div>データが見つかりません。</div>;
   }
 
-  // データが存在する場合
-  const payload = data.payload;
+  // 詳細APIは payload ではなく raw を返すため、raw を payload として扱う
+  const payload = data.raw ?? {};
+
+  // 管理者向け summary（存在しない場合に備えてデフォルトを用意）
+  const summary = data.summary ?? {
+    red_flags: [],
+    clinical_focus: null,
+    stress_level: null,
+    sleep_trouble: null,
+  };
 
     /**
-   * ★ 追加：施術者が最初に見るべき重要項目
+   * 施術者が最初に見るべき重要項目
    */
     const importantKeys = [
       'name',
@@ -187,30 +203,66 @@ export default function AdminIntakeDetailPage() {
         {new Date(data.created_at).toLocaleString()}
       </div>
 
+      {/* 管理者向け summary 表示 */}
+      <section style={{ marginBottom: '16px', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }}>
+        <h2 style={{ marginBottom: '8px' }}>管理者向けサマリー</h2>
+
+        {/* 注意フラグ */}
+        <div>
+          <strong>注意点：</strong>
+          {summary.red_flags && summary.red_flags.length > 0
+            ? summary.red_flags.join('、')
+            : '特になし'}
+        </div>
+
+        {/* 施術フォーカス */}
+        <div>
+          <strong>施術フォーカス：</strong>
+          {summary.clinical_focus ?? '—'}
+        </div>
+
+        {/* ストレスレベル */}
+        <div>
+          <strong>ストレス：</strong>
+          {summary.stress_level ?? '—'}
+        </div>
+
+        {/* 睡眠トラブル */}
+        <div>
+          <strong>睡眠トラブル：</strong>
+          {summary.sleep_trouble === true
+            ? 'あり'
+            : summary.sleep_trouble === false
+              ? 'なし'
+              : '—'}
+        </div>
+      </section>
+
       <hr style={{ marginBottom: '16px' }} />
 
       {/* ★ 追加：施術者向け要約ブロック */}
       <h2>施術者向け要点</h2>
       <table>
         <tbody>
-          {importantKeys.map((key) => (
-            <tr key={key}>
-              <td style={{ fontWeight: 'bold', paddingRight: '12px' }}>
-                {LABELS[key] || key}
-              </td>
-              <td>
-                {Array.isArray(payload[key])
-                  ? payload[key].join(', ')
-                  : String(payload[key] ?? '未入力')}
-              </td>
-            </tr>
+        {importantKeys.map((key) => (
+          <tr key={key}>
+            <td style={{ fontWeight: 'bold', paddingRight: '12px' }}>
+              {LABELS[key] || key}
+            </td>
+            <td>
+              {/* [修正] payload が必ず object である前提にしない */}
+              {Array.isArray(payload?.[key])
+                ? payload[key].join(', ')
+                : String(payload?.[key] ?? '未入力')}
+            </td>
+          </tr>
           ))}
         </tbody>
       </table>
 
       <hr />
 
-      {/* ★ 追加：全入力データ（確認・検証用） */}
+      {/* 全入力データ（確認・検証用） */}
       <h2>入力内容（全項目）</h2>
       <table>
         <tbody>
