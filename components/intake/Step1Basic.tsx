@@ -118,7 +118,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
           name="sex"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold">性別</FormLabel>
+              <FormLabel className="text-base font-semibold">性別 <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="text-base">
@@ -138,8 +138,45 @@ export function Step1Basic({ control }: Step1BasicProps) {
         />
       </div>
 
-      {/* 職業 */}
+       {/* 身長・体重 */}
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField control={control} name="height" render={({ field }) => (
+          <FormItem>
+            <FormLabel>身長（cm） <span className="text-red-500">*</span></FormLabel>
+            <FormControl>
+            <Input
+              type="number"
+              {...field}
+              onChange={(e) =>
+                field.onChange(
+                  e.target.value === '' ? undefined : Number(e.target.value)
+                )
+              }
+            />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <FormField control={control} name="weight" render={({ field }) => (
+          <FormItem>
+            <FormLabel>体重（kg）</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                value={field.value ?? ''}
+                onChange={(e) =>
+                  field.onChange(e.target.value ? Number(e.target.value) : undefined)
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* 職業 */}
       <FormField
           control={control}
           name="occupation"
@@ -159,6 +196,30 @@ export function Step1Basic({ control }: Step1BasicProps) {
             </FormItem>
           )}
         />
+
+        {/* 知ったきっかけ */}
+      <FormField control={control} name="referralSource" render={({ field }) => (
+        <FormItem>
+          <FormLabel>当院を知ったきっかけ <span className="text-red-500">*</span></FormLabel>
+          <Select onValueChange={field.onChange} value={field.value}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              <SelectItem value="紹介">紹介</SelectItem>
+              <SelectItem value="Google検索">Google検索</SelectItem>
+              <SelectItem value="SNS">SNS</SelectItem>
+              <SelectItem value="まいぷれ">まいぷれ</SelectItem>
+              <SelectItem value="チラシ">チラシ</SelectItem>
+              <SelectItem value="その他">その他</SelectItem>
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      )} />
+
       </div>
 
       {/* 連絡先（電話・メール） */}
@@ -169,8 +230,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-semibold">
-                電話番号 <span className="text-red-500">*</span>
-              </FormLabel>
+                電話番号</FormLabel>
               <FormControl>
                 <Input
                   placeholder="090-1234-5678"

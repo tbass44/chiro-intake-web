@@ -81,10 +81,6 @@ export default function IntakePage() {
    * 送信中フラグ（多重送信防止）
    */
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-// フォーム送信結果（成功 / 失敗）を保持するstate
-// 初期状態では結果が存在しないため null を許可している
-  const [submitResult, setSubmitResult] = useState<ApiResponse | null>(null);
   
   /**
    * 現在ステップに対応するタイトル・説明文
@@ -114,9 +110,9 @@ export default function IntakePage() {
   const getStepFields = (step: number) => {
     switch (step) {
       case 1:
-        return ['name', 'furigana', 'dob', 'phone', 'email'] as const;
+        return ['name', 'furigana', 'dob', 'sex', 'email', 'height', 'referralSource'] as const;
       case 2:
-        return ['chiefComplaint', 'painScale'] as const;
+        return ['symptoms'] as const;
       case 3:
         return [] as const; // Step3 は必須項目なし
       case 4:
@@ -152,7 +148,6 @@ export default function IntakePage() {
    */
     const handleSubmit = async () => {
       setIsSubmitting(true);
-      setSubmitResult(null);
     
       try {
         // 全体バリデーション
@@ -165,7 +160,7 @@ export default function IntakePage() {
     
         const formData = form.getValues();
     
-        // ★ ここで FastAPI を直接叩く
+        // ここで FastAPI を直接叩く
         const res = await fetch("http://localhost:8000/api/intake", {
           method: "POST",
           headers: {
@@ -174,19 +169,17 @@ export default function IntakePage() {
           body: JSON.stringify(formData),
         });
     
-        // ★ 成功・失敗をここで判定
+        // 成功・失敗をここで判定
         if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || '送信に失敗しました');
+          throw new Error(await res.text());
         }
 
-        // ★ 成功したら完了画面へ
+        // 成功したら完了画面へ
         router.push('/intake/complete');
     
-        // テストなのでここでは success 扱いしない
-      } catch (error) {
-        console.error('FastAPI submit error:', error);
-        toast.error('FastAPI通信エラー');
+      } catch (e) {
+        console.error(e);
+        toast.error('送信に失敗しました');
       } finally {
         setIsSubmitting(false);
       }
@@ -224,7 +217,6 @@ export default function IntakePage() {
             onEdit={goToStep}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            submitResult={submitResult}
           />
         );
       default:
@@ -311,7 +303,7 @@ export default function IntakePage() {
           nextDisabled={isNextDisabled() || isSubmitting}
           nextLabel={getNextLabel()}
           showSave={currentStep < 5}
-          showHomeButton={!submitResult?.success}
+          // showHomeButton={!submitResult?.success}
         >
           {renderCurrentStep()}
         </StepShell>

@@ -4,12 +4,25 @@ import { Control } from 'react-hook-form';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { IntakeFormData } from '@/lib/types/intake';
+import { useWatch } from 'react-hook-form';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 interface Step3HistoryProps {
   control: Control<IntakeFormData>;
 }
 
+/**
+ * Step3Medical
+ * ------------------------------------------------------
+ * 既往歴・服薬・金属/人工関節の有無を入力するステップ
+ * ・すべて任意
+ * ・金属ありの場合のみ部位入力を表示
+ */
 export function Step3History({ control }: Step3HistoryProps) {
+  const hasImplant = useWatch({
+    control,
+    name: 'hasImplant',
+  });
   return (
     <div className="space-y-6">
       <FormField
@@ -117,8 +130,58 @@ export function Step3History({ control }: Step3HistoryProps) {
         )}
       />
 
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-sm text-red-800">
+        {/* 金属・人工関節の有無 */}
+        <FormField
+        control={control}
+        name="hasImplant"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>体内に金属・人工関節はありますか？</FormLabel>
+            <Select
+              onValueChange={(v) => field.onChange(v === 'true')}
+              value={field.value ? 'true' : 'false'}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="false">ない</SelectItem>
+                <SelectItem value="true">ある</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormItem>
+        )}
+      />
+
+      {/* 部位（条件付き表示） */}
+      {hasImplant && (
+        <FormField
+          control={control}
+          name="implantDetail"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>部位を教えてください</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="例：右膝、腰のボルトなど"
+                  value={field.value ?? ''}
+                  onChange={(e) =>
+                    field.onChange(e.target.value || undefined)
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                わかる範囲でご記入ください
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+      )}
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p className="text-sm text-blue-800">
           <span className="font-semibold">重要：</span>
           既往歴や服薬状況は治療方針に大きく関わります。些細なことでも遠慮なくご記入ください。
           情報は厳重に管理し、治療以外の目的で使用することはありません。

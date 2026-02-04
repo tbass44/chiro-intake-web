@@ -14,7 +14,18 @@ interface Step4LifestyleProps {
   control: Control<IntakeFormData>;
 }
 
+/**
+ * Step4Lifestyle
+ * ------------------------------------------------------
+ * 生活習慣・目標入力ステップ
+ * ・追加項目（布団・枕・肌）はすべて任意
+ * ・goal / consent は必須
+ */
 export function Step4Lifestyle({ control }: Step4LifestyleProps) {
+  const beddingOptions = ['硬め', '普通', '柔らかめ' , '低反発', '高反発', 'その他'] as const;
+  const pillowOptions = ['硬め', '硬さ普通', '柔らかめ' , '低い', '高さ普通', '高い', 'その他'] as const;
+  const skinOptions = ['乾燥', '脂性', 'ニキビ', 'シワ', 'シミ', 'むくみ', '痒み', 'アトピー', '赤み', 'アレルギー', 'その他'] as const;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -107,36 +118,113 @@ export function Step4Lifestyle({ control }: Step4LifestyleProps) {
           )}
         />
 
+        {/* 布団 */}
         <FormField
           control={control}
-          name="deskHours"
-          render={({ field }) => (
+          name="beddingType"
+          render={() => (
             <FormItem>
-              <FormLabel className="text-base font-semibold">デスクワーク時間</FormLabel>
-              <FormControl>
-                <div className="space-y-3">
-                  <Slider
-                    min={0}
-                    max={16}
-                    step={1}
-                    value={[field.value]}
-                    onValueChange={(value) => field.onChange(value[0])}
-                    className="w-full"
+              <FormLabel>布団の種類（複数選択可）</FormLabel>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {beddingOptions.map((item) => (
+                  <FormField
+                    key={item}
+                    control={control}
+                    name="beddingType"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const next = checked
+                                ? [...(field.value ?? []), item]
+                                : (field.value ?? []).filter((v) => v !== item);
+                              field.onChange(next);
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">{item}</FormLabel>
+                      </FormItem>
+                    )}
                   />
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>0時間</span>
-                    <span className="font-semibold text-lg text-gray-900">
-                      {field.value}時間/日
-                    </span>
-                    <span>16時間</span>
-                  </div>
-                </div>
-              </FormControl>
-              <FormDescription>1日あたりの座位での作業時間</FormDescription>
-              <FormMessage />
+                ))}
+              </div>
             </FormItem>
           )}
         />
+
+      {/* 枕 */}
+      <FormField
+        control={control}
+        name="pillowType"
+        render={() => (
+          <FormItem>
+            <FormLabel>枕の種類（複数選択可）</FormLabel>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {pillowOptions.map((item) => (
+                <FormField
+                  key={item}
+                  control={control}
+                  name="pillowType"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item)}
+                          onCheckedChange={(checked) => {
+                            const next = checked
+                              ? [...(field.value ?? []), item]
+                              : (field.value ?? []).filter((v) => v !== item);
+                            field.onChange(next);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{item}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+          </FormItem>
+        )}
+      />
+
+      {/* 肌 */}
+      <FormField
+        control={control}
+        name="skinCondition"
+        render={() => (
+          <FormItem>
+            <FormLabel>肌の状態（複数選択可）</FormLabel>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {skinOptions.map((item) => (
+                <FormField
+                  key={item}
+                  control={control}
+                  name="skinCondition"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item)}
+                          onCheckedChange={(checked) => {
+                            const next = checked
+                              ? [...(field.value ?? []), item]
+                              : (field.value ?? []).filter((v) => v !== item);
+                            field.onChange(next);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{item}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+          </FormItem>
+        )}
+      />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

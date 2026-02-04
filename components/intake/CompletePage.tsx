@@ -20,7 +20,7 @@ import { ENABLE_AI_USER_SUMMARY } from '@/lib/config/featureFlags';
  * ・静的で安全なページ
  */
 
-const STORAGE_KEY = 'intake:v1';
+const STORAGE_KEY = 'intake:v2';
 
 export function CompletePage() {
   const [payload, setPayload] = useState<Record<string, any> | null>(null);

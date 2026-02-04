@@ -29,10 +29,8 @@ import { z } from 'zod';
 export const basicInfoSchema = z.object({
   // 氏名：必須（空文字不可）
   name: z.string().min(1, '氏名を入力してください'),
-
   // ふりがな：必須
   furigana: z.string().min(1, 'ふりがなを入力してください'),
-
   // 生年月日：必須
   // ・1900年以降
   // ・今日より過去の日付のみ許可
@@ -42,52 +40,74 @@ export const basicInfoSchema = z.object({
       const d = new Date(date);
       return d < new Date() && d > new Date('1900-01-01');
     }, '有効な過去の日付を入力してください'),
-
   // 性別：選択肢は enum で固定
   sex: z.enum(['男', '女', 'その他', '回答しない']),
-
   // 職業
   occupation: z.string().optional(),
-
-  // 電話番号：必須
+  // 電話番号
   // ・数字とハイフンのみ許可
   phone: z.string()
-    .min(1, '電話番号を入力してください')
-    .regex(/^[0-9\-]+$/, '正しい電話番号形式で入力してください'),
-
+  .regex(/^[0-9\-]+$/, '正しい電話番号形式で入力してください')
+  .optional(),
   // メールアドレス：必須
   // ・メール形式チェックあり
   email: z.string()
     .min(1, 'メールアドレスを入力してください')
     .email('正しいメールアドレス形式で入力してください'),
-
   // 都道府県：任意
   prefecture: z.string().optional(),
-
   // 市区町村：任意
   city: z.string().optional(),
+    // 当院を知ったきっかけ
+    referralSource: z.enum([
+      '紹介',
+      'Google検索',
+      'SNS',
+      'まいぷれ',
+      'チラシ',
+      'その他',
+    ]), 
+    // 身長（cm）※必須
+    height: z
+      .number({
+        required_error: '身長を入力してください',
+        invalid_type_error: '身長を数値で入力してください',
+      })
+      .min(100, '身長は100cm以上で入力してください')
+      .max(220, '身長は220cm以下で入力してください'),
+    // 体重（kg・任意）
+    weight: z.number()
+    .min(20, '体重は20kg以上で入力してください')
+    .max(200, '体重は200kg以下で入力してください')
+    .optional(),
 });
 
 /* =========================================================
  * Step2：症状に関する情報
  * ======================================================= */
+// 主訴1件分の schema
+export const symptomItemSchema = z.object({
+  id: z.string(),
+  // ここだけ必須
+  symptom: z
+  .string()
+  .min(1, '主訴・症状を入力してください'),
+  onset: z.enum(['acute', 'chronic', 'unknown']).nullable().optional(),
+  severity: z.union([
+    z.literal(1),
+    z.literal(2),
+    z.literal(3),
+    z.literal(4),
+    z.literal(5),
+  ]).nullable().optional(),
+  perceivedCause: z.string().nullable().optional(),
+});
+// Step2 全体
 export const symptomsSchema = z.object({
-  // 主訴（一番つらい症状）：必須
-  chiefComplaint: z.string().min(1, '主訴を入力してください'),
-
-  // いつから症状があるか（選択式）
-  onset: z.enum(['日', '週', '月', '年']),
-
-  // 痛みの強さ：0〜10 の数値
-  painScale: z.number().min(0).max(10),
-
-  // 悪化要因：複数選択を想定（配列）
-  aggravatingFactors: z.array(z.string()),
-
-  // 楽になる要因：任意
-  relievingFactors: z.string().optional(),
-
-  // 過去の治療歴：任意
+  // 単一主訴 → 複数主訴配列
+  symptoms: z
+    .array(symptomItemSchema)
+    .min(1, '主訴・症状を1つ以上入力してください'),
   previousTreatments: z.string().optional(),
 });
 
@@ -109,6 +129,12 @@ export const medicalHistorySchema = z.object({
 
   // 手術歴：任意
   surgeries: z.string().optional(),
+
+  // 金属・人工関節の有無
+  hasImplant: z.boolean().optional().default(false),
+
+  // 部位（hasImplant === true のときのみ使う）
+  implantDetail: z.string().optional(),
 });
 
 /* =========================================================
@@ -124,9 +150,6 @@ export const lifestyleSchema = z.object({
   // 運動頻度：選択式
   exerciseFreq: z.enum(['ほぼなし', '週1-2', '週3-4', 'ほぼ毎日']),
 
-  // デスクワーク時間：0〜16時間
-  deskHours: z.number().min(0).max(16),
-
   // 水分摂取量：0〜5（単位はUI側で管理）
   waterIntake: z.number().min(0).max(5),
 
@@ -135,6 +158,21 @@ export const lifestyleSchema = z.object({
 
   // 飲酒頻度：選択式
   alcohol: z.enum(['なし', 'ときどき', '週数回', '毎日']),
+
+  // 布団の種類
+  beddingType: z
+    .array(z.enum(['硬め', '普通', '柔らかめ' , '低反発', '高反発', 'その他']))
+    .optional(),
+
+  // 枕の種類
+  pillowType: z
+    .array(z.enum(['硬め', '硬さ普通', '柔らかめ' , '低い', '高さ普通', '高い', 'その他']))
+    .optional(),
+
+  // 肌の状態
+  skinCondition: z
+    .array(z.enum(['乾燥', '脂性', 'ニキビ', 'シワ', 'シミ', 'むくみ', '痒み', 'アトピー', '赤み', 'アレルギー', 'その他']))
+    .optional(),
 
   // 来院目的・達成したいこと：必須
   goal: z.string().min(1, '来院目的・達成したいことを入力してください'),

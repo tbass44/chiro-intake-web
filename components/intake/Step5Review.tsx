@@ -21,11 +21,33 @@
 
 import { Control, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Edit, FileCheck, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  Edit,
+  FileCheck,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
 import { IntakeFormData } from '@/lib/types/intake';
+
+type ReviewField = {
+  label: string;
+  value: any;
+  required?: boolean;
+};
+
+type ReviewSection = {
+  title: string;
+  step: number;
+  fields: ReviewField[];
+};
 
 /**
  * Step5Review が受け取る props
@@ -41,7 +63,11 @@ interface Step5ReviewProps {
   onEdit: (step: number) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
-  submitResult?: { success: boolean; message?: string; pdfUrl?: string } | null;
+  submitResult?: { 
+    success: boolean; 
+    message?: string; 
+    pdfUrl?: string 
+  } | null;
 }
 
 export function Step5Review({ 
@@ -59,6 +85,35 @@ export function Step5Review({
    * ・確認画面専用の安全な読み取り方法
    */
   const formData = useWatch({ control });
+
+    /* ===============================
+   * 共通ユーティリティ
+   * =============================== */
+
+    const formatValue = (value: any): string => {
+      if (value === undefined || value === null || value === '') return '未入力';
+      if (Array.isArray(value)) {
+        return value.length ? value.join(', ') : '選択なし';
+      }
+      if (typeof value === 'boolean') return value ? 'はい' : 'いいえ';
+      return String(value);
+    };
+  
+    const isEmpty = (value: any): boolean => {
+      if (value === undefined || value === null || value === '') return true;
+      if (Array.isArray(value) && value.length === 0) return true;
+      if (typeof value === 'boolean' && value === false) return true;
+      return false;
+    };
+
+    /* ===============================
+    * Step2 必須判定用
+    * =============================== */
+
+    const hasMainSymptom =
+    Array.isArray(formData.symptoms) &&
+    formData.symptoms.length > 0 &&
+    !!formData.symptoms[0]?.symptom?.trim();
 
     /**
    * 送信成功後の完了画面
@@ -98,44 +153,7 @@ export function Step5Review({
     );
   }
 
-    /**
-   * 値を人が読める文字列に変換する関数
-   *
-   * ・未入力 → 「未入力」
-   * ・配列 → カンマ区切り
-   * ・boolean → はい / いいえ
-   * ・number → 数値文字列
-   */
-  const formatValue = (value: any): string => {
-    if (value === undefined || value === null || value === '') return '未入力';
-    if (Array.isArray(value)) {
-      return value.length > 0 ? value.join(', ') : '選択なし';
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'はい' : 'いいえ';
-    }
-    if (typeof value === 'number') {
-      return value.toString();
-    }
-    return value.toString();
-  };
-
-    /**
-   * 必須項目チェック用の空判定関数
-   *
-   * ・空文字
-   * ・false
-   * ・空配列
-   * を「未入力」とみなす
-   */
-  const isEmptyValue = (value: any): boolean => {
-    if (value === undefined || value === null || value === '') return true;
-    if (typeof value === 'boolean' && value === false) return true;
-    if (Array.isArray(value) && value.length === 0) return true;
-    return false;
-  };
-
-    /**
+   /**
    * 表示セクション定義
    *
    * ・title : セクション名
@@ -145,71 +163,90 @@ export function Step5Review({
    * ※ UI 表示専用
    * ※ schema とは直接連動しない
    */
-  const sections = [
-    {
-      title: '基本情報',
-      step: 1,
-      fields: [
-        { label: '氏名', value: formData.name, required: true },
-        { label: 'ふりがな', value: formData.furigana, required: true },
-        { label: '生年月日', value: formData.dob, required: true },
-        { label: '性別', value: formData.sex, required: false },
-        { label: '職業', value: formData.occupation, required: false },
-        { label: '電話番号', value: formData.phone, required: true },
-        { label: 'メールアドレス', value: formData.email, required: true },
-        { label: '都道府県', value: formData.prefecture, required: false },
-        { label: '市区町村', value: formData.city, required: false },
-      ]
-    },
-    {
-      title: '主訴・症状',
-      step: 2,
-      fields: [
-        { label: '主訴・症状の詳細', value: formData.chiefComplaint, required: true },
-        { label: '発症時期', value: `数${formData.onset}前から`, required: false },
-        { label: '痛みの程度', value: `${formData.painScale}/10`, required: true },
-        { label: '悪化要因', value: formData.aggravatingFactors, required: false },
-        { label: '軽快要因', value: formData.relievingFactors, required: false },
-        { label: '治療歴', value: formData.previousTreatments, required: false },
-      ]
-    },
-    {
-      title: '既往歴・服薬',
-      step: 3,
-      fields: [
-        { label: '既往歴', value: formData.medicalHistory, required: false },
-        { label: '外傷歴', value: formData.injuries, required: false },
-        { label: '服薬中の薬', value: formData.medications, required: false },
-        { label: 'アレルギー', value: formData.allergies, required: false },
-        { label: '手術歴', value: formData.surgeries, required: false },
-      ]
-    },
-    {
-      title: '生活習慣・目標',
-      step: 4,
-      fields: [
-        { label: '睡眠時間', value: `${formData.sleepHours}時間`, required: false },
-        { label: 'ストレスレベル', value: `${formData.stressLevel}/10`, required: false },
-        { label: '運動頻度', value: formData.exerciseFreq, required: false },
-        { label: 'デスクワーク', value: `${formData.deskHours}時間/日`, required: false },
-        { label: '水分摂取', value: `${formData.waterIntake}L/日`, required: false },
-        { label: '喫煙', value: formData.smoking, required: false },
-        { label: '飲酒頻度', value: formData.alcohol, required: false },
-        { label: '来院目的', value: formData.goal, required: true },
-        { label: 'プライバシー同意', value: formData.consent, required: true },
-      ]
-    }
-  ];
-
-    /**
-   * 全必須項目が入力済みかをチェック
-   *
-   * ・送信ボタン有効／無効判定
-   * ・警告表示の制御に使用
-   */
-  const hasRequiredFields = sections.every(section =>
-    section.fields.filter(field => field.required).every(field => !isEmptyValue(field.value))
-  );
+   const sections: ReviewSection[] = [
+      {
+        title: '基本情報',
+        step: 1,
+        fields: [
+          { label: '氏名', value: formData.name, required: true },
+          { label: 'ふりがな', value: formData.furigana, required: true },
+          { label: '生年月日', value: formData.dob, required: true },
+          { label: '性別', value: formData.sex, required: true },
+          { label: '職業', value: formData.occupation },
+          { label: '電話番号', value: formData.phone },
+          { label: 'メール', value: formData.email, required: true },
+          { label: '身長', value: `${formData.height} cm`, required: true },
+          { label: '体重', value: formData.weight ? `${formData.weight} kg` : undefined },
+          { label: '来院経路', value: formData.referralSource, required: true },
+          { label: '都道府県', value: formData.prefecture },
+          { label: '市区町村', value: formData.city },
+        ],
+      },
+      {
+        title: '主訴・症状',
+        step: 2,
+        fields: formData.symptoms?.map((s, i) => ({
+          label: `症状 ${i + 1}`,
+          value: [
+            `主訴：${s.symptom}`,
+            s.onset && `経過：${s.onset}`,
+            s.severity && `痛み：${s.severity}/5`,
+            s.perceivedCause && `原因：${s.perceivedCause}`,
+          ]
+            .filter(Boolean)
+            .join(' / '),
+          required: i === 0, // 最初の主訴のみ必須
+        })) ?? [],
+      },
+      {
+        title: '既往歴・服薬',
+        step: 3,
+        fields: [
+          { label: '既往歴', value: formData.medicalHistory },
+          { label: '外傷歴', value: formData.injuries },
+          { label: '服薬', value: formData.medications },
+          { label: 'アレルギー', value: formData.allergies },
+          { label: '手術歴', value: formData.surgeries },
+          {
+            label: '金属・人工関節',
+            value: formData.hasImplant,
+          },
+          {
+            label: '部位',
+            value: formData.hasImplant
+              ? formData.implantDetail
+              : undefined,
+          },
+        ],
+      },
+      {
+        title: '生活習慣・目標',
+        step: 4,
+        fields: [
+          { label: '睡眠時間', value: `${formData.sleepHours} 時間` },
+          { label: 'ストレス', value: `${formData.stressLevel}/10` },
+          { label: '運動頻度', value: formData.exerciseFreq },
+          { label: '布団', value: formData.beddingType },
+          { label: '枕', value: formData.pillowType },
+          { label: '肌の状態', value: formData.skinCondition },
+          { label: '水分摂取量', value: formData.waterIntake },
+          { label: '来院目的', value: formData.goal, required: true },
+          { label: '同意', value: formData.consent, required: true },
+        ],
+      },
+    ];
+  
+    const hasRequiredFields =
+      formData.name &&
+      formData.furigana &&
+      formData.dob &&
+      formData.sex &&
+      formData.email &&
+      formData.height &&
+      formData.referralSource &&
+      hasMainSymptom &&
+      formData.goal &&
+      formData.consent === true;
 
     /**
    * 確認画面のメイン表示
@@ -270,7 +307,7 @@ export function Step5Review({
                     )}
                   </div>
                   <div className="flex-1 text-right">
-                    {field.required && isEmptyValue(field.value) ? (
+                    {field.required && isEmpty(field.value) ? (
                       <Badge variant="destructive" className="text-xs">
                         未入力
                       </Badge>

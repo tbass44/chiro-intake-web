@@ -26,8 +26,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { intakeFormSchema, type IntakeFormData } from '@/lib/validation/intakeSchema';
 
 // localStorage に保存する際のキー
-// フォーム構造を変更した場合は v2 に上げる想定
-const STORAGE_KEY = 'intake:v1';
+// フォーム構造を変更した場合は v3 に上げる想定
+const STORAGE_KEY = 'intake:v2';
 
 // フォームの初期状態
 // 新規入力時、または保存データが無い場合に使われる
@@ -40,24 +40,35 @@ const defaultValues: IntakeFormData = {
   email: '',
   prefecture: '',
   city: '',
-  chiefComplaint: '',
-  onset: '日',
-  painScale: 0,
-  aggravatingFactors: [],
-  relievingFactors: '',
+  referralSource: 'Google検索',
+  height: 170,
+  weight: undefined,
+  symptoms: [
+    {
+      id: crypto.randomUUID(),
+      symptom: '',
+      onset: null,
+      severity: null,
+      perceivedCause: null,
+    },
+  ],
   previousTreatments: '',
   medicalHistory: '',
   injuries: '',
   medications: '',
   allergies: '',
   surgeries: '',
+  hasImplant: false,
+  implantDetail: '',
   sleepHours: 7,
   stressLevel: 5,
   exerciseFreq: 'ほぼなし',
-  deskHours: 8,
   waterIntake: 1.5,
   smoking: false,
   alcohol: 'なし',
+  beddingType: [],
+  pillowType: [],
+  skinCondition: [],
   goal: '',
   consent: false,
   occupation: '',

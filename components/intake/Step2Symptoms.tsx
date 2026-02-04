@@ -1,197 +1,213 @@
 'use client';
 
-import { Control } from 'react-hook-form';
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Control, useFieldArray } from 'react-hook-form';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { IntakeFormData } from '@/lib/types/intake';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { IntakeFormData } from '@/lib/validation/intakeSchema';
+import { Plus, Trash2 } from 'lucide-react';
 
 interface Step2SymptomsProps {
   control: Control<IntakeFormData>;
 }
 
-const aggravatingFactorOptions = [
-  '長時間座位',
-  '長時間立位',
-  '屈曲',
-  '伸展',
-  '睡眠不足',
-  '冷え'
-];
-
+/**
+ * Step2Symptoms
+ * ------------------------------------------------------
+ * 主訴・症状を「複数入力」するための Step2 UI。
+ *
+ * ・useFieldArray を使用
+ * ・主訴は無制限に追加可能
+ * ・最低1件は必須（削除不可）
+ */
 export function Step2Symptoms({ control }: Step2SymptomsProps) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'symptoms',
+  });
+
   return (
-    <div className="space-y-6">
-      <FormField
-        control={control}
-        name="chiefComplaint"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold">
-              主訴・症状の詳細 <span className="text-red-500">*</span>
-            </FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="どのような症状でお困りですか？痛みの部位、程度、性質などを詳しくお聞かせください。"
-                className="min-h-32 text-base resize-y"
-                {...field}
-              />
-            </FormControl>
-            <FormDescription>
-              例：腰の右側に鈍い痛みがあり、座ってから立ち上がる時に特に痛みます
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+    <div className="space-y-8">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={control}
-          name="onset"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold">発症時期</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+      {/* =========================
+          主訴・症状（複数）
+         ========================= */}
+      {fields.map((field, index) => (
+        <div
+          key={field.id}
+          className="border rounded-lg p-4 space-y-4 bg-white"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold">
+              主訴・症状 {index + 1}
+            </h3>
+
+            {/* 削除ボタン（1件のみの場合は不可） */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={fields.length === 1}
+              onClick={() => remove(index)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* 主訴名 */}
+          <FormField
+            control={control}
+            name={`symptoms.${index}.symptom`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>主訴・症状 <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <SelectTrigger className="text-base">
-                    <SelectValue placeholder="選択してください" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="日">数日前から</SelectItem>
-                  <SelectItem value="週">数週間前から</SelectItem>
-                  <SelectItem value="月">数ヶ月前から</SelectItem>
-                  <SelectItem value="年">数年前から</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="painScale"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold">
-                痛みの程度 <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <div className="space-y-3">
-                  <Slider
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={[field.value]}
-                    onValueChange={(value) => field.onChange(value[0])}
-                    className="w-full"
+                  <Input
+                    placeholder="例：首の痛み、腰のだるさ"
+                    {...field}
                   />
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>0: 痛みなし</span>
-                    <span className="font-semibold text-lg text-gray-900">
-                      {field.value}
-                    </span>
-                    <span>10: 我慢できない</span>
-                  </div>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="aggravatingFactors"
-        render={() => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold">痛みが悪化する要因</FormLabel>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-              {aggravatingFactorOptions.map((factor) => (
-                <FormField
-                  key={factor}
-                  control={control}
-                  name="aggravatingFactors"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value?.includes(factor)}
-                          onCheckedChange={(checked) => {
-                            const updatedValue = checked
-                              ? [...(field.value || []), factor]
-                              : (field.value || []).filter((value) => value !== factor);
-                            field.onChange(updatedValue);
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">
-                        {factor}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          {/* 発症のしかた */}
+          <FormField
+            control={control}
+            name={`symptoms.${index}.onset`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>発症のしかた</FormLabel>
+                <Select
+                  value={field.value ?? ''}
+                  onValueChange={(v) =>
+                    field.onChange(v === '' ? null : v)
+                  }
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="選択してください" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="acute">急性（急に出た）</SelectItem>
+                    <SelectItem value="chronic">慢性（徐々に出てきた）</SelectItem>
+                    <SelectItem value="unknown">わからない</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
 
-      <FormField
-        control={control}
-        name="relievingFactors"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold">痛みが楽になる方法</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="どのような時に痛みが楽になりますか？"
-                className="min-h-24 text-base resize-y"
-                {...field}
-              />
-            </FormControl>
-            <FormDescription>
-              例：温める、安静にする、特定の姿勢をとる など
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          {/* 痛みレベル */}
+          <FormField
+            control={control}
+            name={`symptoms.${index}.severity`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>つらさの程度</FormLabel>
+                <Select
+                  value={field.value?.toString() ?? ''}
+                  onValueChange={(v) =>
+                    field.onChange(v === '' ? null : Number(v))
+                  }
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="選択してください" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="1">軽い</SelectItem>
+                    <SelectItem value="2">やや気になる</SelectItem>
+                    <SelectItem value="3">つらい</SelectItem>
+                    <SelectItem value="4">かなりつらい</SelectItem>
+                    <SelectItem value="5">非常につらい</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
 
+          {/* 本人が思う原因 */}
+          <FormField
+            control={control}
+            name={`symptoms.${index}.perceivedCause`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>思い当たる原因</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="例：デスクワーク、運動不足 など"
+                    value={field.value ?? ''}
+                    // ↑ null の場合は空文字に変換
+                    onChange={(e) =>
+                      field.onChange(e.target.value || null)
+                      // ↑ 空文字なら null として保存
+                    }
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+      ))}
+
+      {/* 追加ボタン */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() =>
+          append({
+            id: crypto.randomUUID(),
+            symptom: '',
+            onset: null,
+            severity: null,
+            perceivedCause: null,
+          })
+        }
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        主訴・症状を追加
+      </Button>
+
+      {/* =========================
+          これまでの治療歴
+         ========================= */}
       <FormField
         control={control}
         name="previousTreatments"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-base font-semibold">これまでの治療歴</FormLabel>
+            <FormLabel>これまでの治療歴</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="同じ症状で他の治療院や病院を受診されましたか？"
-                className="min-h-24 text-base resize-y"
+                placeholder="例：整形外科、接骨院、整体など"
                 {...field}
               />
             </FormControl>
             <FormDescription>
-              整形外科、接骨院、マッサージ、鍼灸など
+              同じ症状で受けた治療があればご記入ください
             </FormDescription>
-            <FormMessage />
           </FormItem>
         )}
       />
-
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-sm text-yellow-800">
-          <span className="font-semibold">症状について：</span>
-          詳しい症状の情報をいただくことで、より適切なケアプランをご提案できます。気になることがあれば遠慮なくご記入ください。
-        </p>
-      </div>
     </div>
   );
 }
