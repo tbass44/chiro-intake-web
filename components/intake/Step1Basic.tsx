@@ -263,7 +263,7 @@ export function Step1Basic({ control }: Step1BasicProps) {
                 />
               </FormControl>
               <FormDescription>
-                予約確認メールなどをお送りします
+                確認メールなどをお送りします
               </FormDescription>
               <FormMessage />
             </FormItem>

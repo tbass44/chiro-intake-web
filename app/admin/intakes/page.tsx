@@ -15,18 +15,21 @@ import {
  * FastAPI の GET /admin/intakes のレスポンス構造に合わせている
  */
 type IntakeItem = {
-  id: number;                 // DBのID
-  created_at: string | null;  // 受付日時（ISO文字列）
+  id: number;
+  created_at: string | null;
   payload: {
-    name?: string;            // 氏名（未入力の可能性あり）
-    chiefComplaint?: string;  // 主な困りごと（未入力の可能性あり）
+    name?: string;
   };
-  // 一覧表示用の最小 summary（APIが返す分だけ）
   summary?: {
+    main_symptom?: string | null;
+    severity?: number | null;
+    symptom_count?: number;
+    chief_complaints?: string[]; 
     red_flags?: string[];
     clinical_focus?: string | null;
   };
 };
+
 
 export default function AdminIntakesPage() {
   /**
@@ -194,7 +197,7 @@ export default function AdminIntakesPage() {
               </div>
               <div>
                 <strong>主な困りごと：</strong>
-                {item.payload?.chiefComplaint || '（未入力）'}
+                {item.summary?.chief_complaints?.join('、') || '（未入力）'}
               </div>
 
               {/* 注意フラグ表示 */}

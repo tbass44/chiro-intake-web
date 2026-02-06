@@ -38,6 +38,7 @@ const defaultValues: IntakeFormData = {
   sex: '回答しない',
   phone: '',
   email: '',
+  occupation: '',
   prefecture: '',
   city: '',
   referralSource: 'Google検索',
@@ -70,8 +71,7 @@ const defaultValues: IntakeFormData = {
   pillowType: [],
   skinCondition: [],
   goal: '',
-  consent: false,
-  occupation: '',
+  consent: false,  
 };
 
 export function useIntakeForm() {

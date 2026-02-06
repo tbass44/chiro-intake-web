@@ -11,7 +11,7 @@ import type {
   AdminIntakeListItem,
 } from "@/lib/types/adminIntake";
 
-const API_BASE = process.env.NEXT_PUBLIC_INTAKE_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 /**
  * API_BASE が未設定の場合は即エラーにする

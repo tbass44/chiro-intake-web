@@ -313,7 +313,7 @@ export function Step4Lifestyle({ control }: Step4LifestyleProps) {
             </FormLabel>
             <FormControl>
               <Textarea
-                placeholder="治療を通じて達成したい目標や改善したい点をお聞かせください"
+                placeholder="施術を通じて達成したい目標や改善したい点をお聞かせください"
                 className="min-h-32 text-base resize-y"
                 {...field}
               />
@@ -343,7 +343,7 @@ export function Step4Lifestyle({ control }: Step4LifestyleProps) {
               </FormLabel>
               <FormDescription className="text-sm">
                 ご入力いただいた情報は当院のプライバシーポリシーに基づき安全に取り扱います。
-                治療以外の目的で使用することはありません。
+                施術以外の目的で使用することはありません。
               </FormDescription>
             </div>
             <FormMessage />
@@ -353,9 +353,9 @@ export function Step4Lifestyle({ control }: Step4LifestyleProps) {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          <span className="font-semibold">治療計画について：</span>
-          生活習慣の情報は、お客様に最適な治療計画を立てるために重要です。
-          正確な情報をご提供いただくことで、より効果的な治療をご提案できます。
+          <span className="font-semibold">施術計画について：</span>
+          生活習慣の情報は、お客様に最適な施術計画を立てるために重要です。
+          正確な情報をご提供いただくことで、より効果的な施術をご提案できます。
         </p>
       </div>
     </div>

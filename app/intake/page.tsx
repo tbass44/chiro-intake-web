@@ -18,7 +18,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Form } from '@/components/ui/form';
 import { StepShell } from '@/components/intake/StepShell';
 import { Step1Basic } from '@/components/intake/Step1Basic';
@@ -100,6 +100,11 @@ export default function IntakePage() {
     return isValid;
   };
 
+  // 次ステップ遷移で画面トップに移動
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);  
+
     /**
    * ステップごとの「必須フィールド定義」
    *
@@ -155,19 +160,26 @@ export default function IntakePage() {
         // バリデーションに失敗した場合はエラーメッセージを表示
         if (!isValid) {
           toast.error('入力内容に不備があります。確認してください。');
+          setIsSubmitting(false);
           return;
         }
     
         const formData = form.getValues();
-    
-        // ここで FastAPI を直接叩く
-        const res = await fetch("http://localhost:8000/api/intake", {
+
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+        if (!API_BASE_URL) {
+          throw new Error('API base URL is not defined');
+        }
+        
+        const res = await fetch(`${API_BASE_URL}/api/intake`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
         });
+       
     
         // 成功・失敗をここで判定
         if (!res.ok) {
@@ -180,8 +192,7 @@ export default function IntakePage() {
       } catch (e) {
         console.error(e);
         toast.error('送信に失敗しました');
-      } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false); // ← 失敗時だけ戻す
       }
     };
 

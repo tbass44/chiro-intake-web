@@ -115,6 +115,12 @@ export function Step5Review({
     formData.symptoms.length > 0 &&
     !!formData.symptoms[0]?.symptom?.trim();
 
+    const ONSET_LABELS: Record<string, string> = {
+      acute: '急性',
+      chronic: '慢性',
+      unknown: '不明',
+    }; 
+
     /**
    * 送信成功後の完了画面
    *
@@ -185,18 +191,27 @@ export function Step5Review({
       {
         title: '主訴・症状',
         step: 2,
-        fields: formData.symptoms?.map((s, i) => ({
-          label: `症状 ${i + 1}`,
-          value: [
-            `主訴：${s.symptom}`,
-            s.onset && `経過：${s.onset}`,
-            s.severity && `痛み：${s.severity}/5`,
-            s.perceivedCause && `原因：${s.perceivedCause}`,
-          ]
-            .filter(Boolean)
-            .join(' / '),
-          required: i === 0, // 最初の主訴のみ必須
-        })) ?? [],
+        fields: [
+          ...(formData.symptoms?.map((s, i) => ({
+            label: `症状 ${i + 1}`,
+            value: [
+              `主訴：${s.symptom}`,
+              s.onset && `経過：${ONSET_LABELS[s.onset] ?? s.onset}`,
+              s.severity && `痛み：${s.severity}/5`,
+              s.perceivedCause && `原因：${s.perceivedCause}`,
+            ]
+              .filter(Boolean)
+              .join(' / '),
+            required: i === 0,
+          })) ?? []),
+      
+          // これまでの治療歴
+          {
+            label: 'これまでの治療歴',
+            value: formData.previousTreatments,
+            required: false,
+          },
+        ],
       },
       {
         title: '既往歴・服薬',
@@ -246,7 +261,7 @@ export function Step5Review({
       formData.referralSource &&
       hasMainSymptom &&
       formData.goal &&
-      formData.consent === true;
+      formData.consent === true;     
 
     /**
    * 確認画面のメイン表示

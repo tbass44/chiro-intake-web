@@ -45,6 +45,7 @@ export interface SymptomItem {
   severity: 1 | 2 | 3 | 4 | 5 | null;
   // 本人が思う原因（自由記述）
   perceivedCause: string | null;
+  previousTreatments: string | null;
 }
 
 export interface MedicalHistory {
