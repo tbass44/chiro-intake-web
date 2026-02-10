@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StepIndicator } from '@/components/ui/StepIndicator';
-import { ArrowLeft, ArrowRight, Save, Stethoscope, Home } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, HandHeart, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -161,7 +161,7 @@ export function StepShell({
 
               {/* ロゴ・タイトル */}
               <div className="flex items-center space-x-3">
-                <Stethoscope className="h-8 w-8 text-blue-600" />
+                <HandHeart className="h-8 w-8 text-blue-600" />
                 <div>
                   <h1 className="text-xl font-bold text-blue-900">カイロシガ整体院</h1>
                   <p className="text-sm text-blue-600">初回AIヒアリングナビフォーム</p>

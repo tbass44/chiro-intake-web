@@ -60,3 +60,8 @@ AIヒアリングナビフォーム（フロントエンド）。Next.js 14 + Re
 pnpm i
 cp .env.example .env.local
 pnpm dev
+
+## 起動手順
+
+cd chiro-intake-web
+pnpm dev

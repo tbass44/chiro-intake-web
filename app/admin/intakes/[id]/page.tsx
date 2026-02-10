@@ -78,6 +78,8 @@ type IntakeDetail = {
     stress_level?: number | null;
     sleep_hours?: number | null;
   };
+  line_status?: '未連携' | '連携済';
+  line_sent_at?: string | null;
 };
 
 export default function AdminIntakeDetailPage() {
@@ -220,6 +222,50 @@ export default function AdminIntakeDetailPage() {
         <strong>受付日時：</strong>
         {new Date(data.created_at).toLocaleString()}
       </div>
+
+      <div style={{ marginBottom: '16px' }}>
+        <strong>LINE連携：</strong>{' '}
+        {data.line_status === '連携済' ? (
+          <span style={{ color: 'green', fontWeight: 'bold' }}>
+            🟢 連携済
+            {data.line_sent_at && (
+              <span style={{ marginLeft: '8px', color: '#555', fontWeight: 'normal' }}>
+                （送信：{new Date(data.line_sent_at).toLocaleString()}）
+              </span>
+            )}
+          </span>
+        ) : (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>
+            🔴 未連携
+          </span>
+        )}
+      </div>
+
+      {data.line_status === '未連携' && (
+        <div style={{ marginBottom: '16px' }}>
+          <button
+            onClick={async () => {
+              const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+              const res = await fetch(
+                `${API_BASE_URL}/admin/intakes/${data.id}/resend-line`,
+                { method: 'POST' }
+              );
+
+              const json = await res.json();
+              alert(json.message ?? json.status);
+            }}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#f59e0b',
+              color: '#fff',
+              borderRadius: '4px',
+            }}
+          >
+            LINE再連携を促す
+          </button>
+        </div>
+      )}
 
       {/* =========================
           管理者向けサマリー

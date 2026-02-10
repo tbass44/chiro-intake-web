@@ -9,26 +9,13 @@ import {
   fetchAdminIntakes,
   getAdminIntakeCsvUrl,
 } from "@/lib/api/intakeAdmin";
+import type { AdminIntakeListItem } from "@/lib/types/adminIntake";
 
 /**
  * 一覧ページで使うデータ型
  * FastAPI の GET /admin/intakes のレスポンス構造に合わせている
  */
-type IntakeItem = {
-  id: number;
-  created_at: string | null;
-  payload: {
-    name?: string;
-  };
-  summary?: {
-    main_symptom?: string | null;
-    severity?: number | null;
-    symptom_count?: number;
-    chief_complaints?: string[]; 
-    red_flags?: string[];
-    clinical_focus?: string | null;
-  };
-};
+type IntakeItem = AdminIntakeListItem;
 
 
 export default function AdminIntakesPage() {
@@ -215,6 +202,19 @@ export default function AdminIntakesPage() {
                 </div>
               )}
 
+
+              <div>
+                <strong>LINE連携：</strong>
+                {item.line_status === '連携済' ? (
+                  <span style={{ color: 'green', fontWeight: 'bold' }}>
+                    🟢 連携済
+                  </span>
+                ) : (
+                  <span style={{ color: 'red', fontWeight: 'bold' }}>
+                    🔴 未連携
+                  </span>
+                )}
+              </div>
 
               </Link>
             </li>

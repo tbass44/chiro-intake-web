@@ -186,6 +186,12 @@ export default function IntakePage() {
           throw new Error(await res.text());
         }
 
+        // レスポンスJSONを取得
+        const json = await res.json();
+
+        // intake_id を保存
+        localStorage.setItem('intake_id', String(json.intake_id));
+
         // 成功したら完了画面へ
         router.push('/intake/complete');
     

@@ -25,6 +25,8 @@ const STORAGE_KEY = 'intake:v2';
 export function CompletePage() {
   const [payload, setPayload] = useState<Record<string, any> | null>(null);
   const [userSummary, setUserSummary] = useState<string | null>(null);
+  const [lineLinkToken, setLineLinkToken] = useState<string | null>(null);
+
   const router = useRouter();
   const handleBackToTop = () => {
     router.push('/');
@@ -42,6 +44,27 @@ export function CompletePage() {
       console.error('failed to parse intake payload', e);
     }
   }, []);
+
+  useEffect(() => {
+    const intakeId = localStorage.getItem('intake_id');
+    if (!intakeId) return;
+  
+    const run = async () => {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+      const res = await fetch(
+        `${API_BASE_URL}/api/intake/${intakeId}/user-summary`
+      );
+  
+      const json = await res.json();
+  
+      setUserSummary(json.overview);
+      setLineLinkToken(json.line_link_token);
+    };
+  
+    run();
+  }, []);
+ 
 
   // ユーザー向け AI summary 用の入力データを生成（まだ表示しない）
   const userSummaryInput = payload
@@ -76,10 +99,16 @@ export function CompletePage() {
         setUserSummary(json.summary);
         return;
       }     
-      // ▼ 今はダミー
-      setUserSummary(
-        'ご入力いただいた内容をもとに、現在の状態を分かりやすく整理しています。\n\n来院時に、あなたの状態を一緒に確認していきましょう。'
-      );
+
+      // /api/intake/{id}/user-summary の戻りを受け取る
+      const result = {
+        summary:
+          'ご入力いただいた内容をもとに、現在の状態を分かりやすく整理しています。\n\n来院時に、あなたの状態を一緒に確認していきましょう。',
+        line_link_token: payload?.line_link_token ?? null,
+      };
+      
+      setUserSummary(result.summary);
+      setLineLinkToken(result.line_link_token);      
 
     };      
     run();
@@ -116,6 +145,58 @@ export function CompletePage() {
           </p>
 
         </section>
+
+        {lineLinkToken && (
+          <section className="mb-10 rounded-lg border border-green-200 bg-green-50 p-5 text-center">
+            <h3 className="mb-2 text-sm font-semibold text-green-800">
+              📩 LINEへの送信について
+            </h3>
+
+            <p className="mb-4 text-sm text-green-900 leading-relaxed">
+            
+              <div className="mb-4">
+                <Button
+                  onClick={() => {
+                    window.open('https://lin.ee/aTBmYT4', '_blank');
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  カイロシガ整体院 公式LINEを開く
+                </Button>
+              </div>
+
+              今回の内容は、来院時のカウンセリングをスムーズにするため
+              <strong>「カイロシガ整体院 公式LINE」</strong>にもお送りします。
+              <br />
+              <br />
+              <strong>① 公式LINEを友だち追加</strong>
+              <br />
+              <strong>② 下のコードをコピーして、そのままLINEで送信</strong>
+              <br />
+              していただくと、内容がLINEに届きます。
+            </p>
+
+            <pre className="mb-3 inline-block rounded bg-white px-4 py-2 text-sm text-gray-800 border">
+              link={lineLinkToken}
+            </pre>
+
+
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await navigator.clipboard.writeText(`link=${lineLinkToken}`);
+                alert('コピーしました');
+              }}
+            >
+              コピー
+            </Button>
+
+            <p className="mt-2 text-xs text-green-800">
+              ※ すでにLINEに届いている場合、この操作は不要です
+            </p>
+          </section>
+        )}
+
 
         <Button
           onClick={handleBackToTop}

@@ -19,12 +19,21 @@ export type AdminIntakeSummary = {
 
 /**
  * 一覧取得用（/admin/intakes）
- * ※ summary は含まれない
+ * 一覧表示用の最小 summary と LINE 連携状態を含む
  */
 export type AdminIntakeListItem = {
   id: number;
-  payload: Record<string, unknown>;
+  payload: {
+    name?: string;
+    [key: string]: unknown;
+  };
   created_at: string | null;
+  summary: {
+    chief_complaints: string[];
+    red_flags: string[];
+    clinical_focus: string | null;
+  };
+  line_status: "未連携" | "連携済";
 };
 
 /**
