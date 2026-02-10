@@ -38,7 +38,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 # chiro-intake-web
 
 
-AI問診フォーム（フロントエンド）。Next.js 14 + React + TypeScript + shadcn/ui。
+AIヒアリングナビフォーム（フロントエンド）。Next.js 14 + React + TypeScript + shadcn/ui。
 
 
 ## Stack
@@ -59,4 +59,9 @@ AI問診フォーム（フロントエンド）。Next.js 14 + React + TypeScrip
 ```bash
 pnpm i
 cp .env.example .env.local
+pnpm dev
+
+## 起動手順
+
+cd chiro-intake-web
 pnpm dev
