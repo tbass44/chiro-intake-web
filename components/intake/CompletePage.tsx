@@ -26,6 +26,7 @@ export function CompletePage() {
   const [payload, setPayload] = useState<Record<string, any> | null>(null);
   const [userSummary, setUserSummary] = useState<string | null>(null);
   const [lineLinkToken, setLineLinkToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
   const handleBackToTop = () => {
@@ -50,16 +51,24 @@ export function CompletePage() {
     if (!intakeId) return;
   
     const run = async () => {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
-      const res = await fetch(
-        `${API_BASE_URL}/api/intake/${intakeId}/user-summary`
-      );
-  
-      const json = await res.json();
-  
-      setUserSummary(json.overview);
-      setLineLinkToken(json.line_link_token);
+      try {
+        setIsLoading(true);
+    
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    
+        const res = await fetch(
+          `${API_BASE_URL}/api/intake/${intakeId}/user-summary`
+        );
+    
+        const json = await res.json();
+    
+        setUserSummary(json.overview);
+        setLineLinkToken(json.line_link_token);
+      } catch (e) {
+        console.error('failed to fetch user summary', e);
+      } finally {
+        setIsLoading(false);
+      }
     };
   
     run();
@@ -117,6 +126,23 @@ export function CompletePage() {
     
   }, [payload]);
 
+  // ローディング分岐
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center space-y-6">
+          <div className="h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <h2 className="text-xl font-semibold text-gray-800">
+            AIがヒアリング内容を整理しています
+          </h2>
+          <p className="text-sm text-gray-500">
+            10〜20秒ほどかかる場合があります
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
@@ -139,11 +165,9 @@ export function CompletePage() {
             ヒアリング内容のまとめ
           </h2>
 
-          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-            {userSummary ??
-              'ご入力いただいた内容をもとに、現在の状態を分かりやすく整理しています。'}
-          </p>
-
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+              {userSummary}
+            </p>
         </section>
 
         {lineLinkToken && (
