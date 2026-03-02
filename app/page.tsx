@@ -39,8 +39,8 @@ export default function Home() {
             <span className="absolute left-0 bottom-2 w-full h-4 bg-blue-200/60 -z-0 rounded-sm"></span>
           </h1>
           <div className="mt-6 mb-6">
-            <span className="px-4 py-2 font-medium text-white bg-blue-600 rounded-full shadow">
-              AIで状態整理
+            <span className="inline-block text-lg font-medium px-4 py-1 rounded-full bg-blue-100 text-blue-700">
+              AIヒアリングナビ
             </span>
           </div>
 
@@ -55,6 +55,15 @@ export default function Home() {
             所要時間は約5〜10分。<br />
             来院予定がなくてもご利用いただけます。
           </p>
+
+          <Link href="/intake">
+            <Button
+              size="lg"
+              className="mt-8 text-lg px-10 py-4 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg transition-all"
+            >
+              今すぐヒアリング開始
+            </Button>
+          </Link>
         </div>
       </section>
 
