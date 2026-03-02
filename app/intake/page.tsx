@@ -172,6 +172,7 @@ export default function IntakePage() {
           throw new Error('API base URL is not defined');
         }
         
+        // intake API 送信
         const res = await fetch(`${API_BASE_URL}/api/intake`, {
           method: "POST",
           headers: {
@@ -191,6 +192,20 @@ export default function IntakePage() {
 
         // intake_id を保存
         localStorage.setItem('intake_id', String(json.intake_id));
+
+        // Next.js APIへメール通知
+        await fetch("/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            intake_id: json.intake_id,
+            name: formData.name,
+            email: formData.email,
+            symptoms: formData.symptoms,
+          }),
+        });
 
         // 成功したら完了画面へ
         router.push('/intake/complete');
