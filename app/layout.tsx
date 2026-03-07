@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/ogp-ai-hearing-navi.png',
+        url: '/images/ogp-ai-hearing-navi.png',
         width: 1200,
         height: 630,
         alt: 'AIヒアリングナビ',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'あなたの体の状態をAIが分析｜AIヒアリングナビ｜カイロシガ整体院',
     description: 'AIを使って体の状態や生活習慣を整理する健康チェックサービス。',
-    images: ['/ogp-ai-hearing-navi.png'],
+    images: ['/images/ogp-ai-hearing-navi.png'],
   },
 };
 
