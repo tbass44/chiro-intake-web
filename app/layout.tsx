@@ -11,8 +11,35 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: 'カイロシガ整体院｜AIヒアリングナビ',
-  description: 'AIヒアリングナビは、AIを活用してお身体の状態やお悩みを整理するサポートチェックサービスです。ご入力いただいた内容は、施術やサポートの参考として活用されます。',
+  metadataBase: new URL('https://hearing.chiroshiga.com'),
+  title: 'あなたの体の状態をAIが分析｜AIヒアリングナビ｜カイロシガ整体院',
+  description:
+    'AIヒアリングナビは、AIを使って体の状態や生活習慣を整理する健康チェックサービスです。整体前のセルフチェックとしても活用できます。',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'あなたの体の状態をAIが分析｜AIヒアリングナビ｜カイロシガ整体院',
+    description: 'AIを使って体の状態や生活習慣を整理する健康チェックサービス。',
+    url: 'https://hearing.chiroshiga.com',
+    siteName: 'AIヒアリングナビ',
+    locale: 'ja_JP',
+    type: 'website',
+    images: [
+      {
+        url: '/ogp-ai-hearing-navi.png',
+        width: 1200,
+        height: 630,
+        alt: 'AIヒアリングナビ',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'あなたの体の状態をAIが分析｜AIヒアリングナビ｜カイロシガ整体院',
+    description: 'AIを使って体の状態や生活習慣を整理する健康チェックサービス。',
+    images: ['/ogp-ai-hearing-navi.png'],
+  },
 };
 
 // Placeholder ClerkProvider component
