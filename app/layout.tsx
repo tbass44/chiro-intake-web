@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Noto_Sans_JP } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
+import Script from "next/script";
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansJP = Noto_Sans_JP({ 
@@ -54,14 +55,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${notoSansJP.variable}`}>
-      <body className={`${inter.className} font-sans`}>
-        <ClerkProvider>
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-            {children}
-          </div>
-          <Toaster position="top-right" />
-        </ClerkProvider>
-      </body>
-    </html>
+        <head>
+          {/* Google Analytics */}
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-36F224616N"
+            strategy="afterInteractive"
+          />
+          <Script id="ga-script" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-36F224616N');
+            `}
+          </Script>
+        </head>
+        <body className={`${inter.className} font-sans`}>
+          <ClerkProvider>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+              {children}
+            </div>
+            <Toaster position="top-right" />
+          </ClerkProvider>
+        </body>
+      </html>
   );
 }
