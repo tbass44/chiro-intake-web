@@ -59,18 +59,18 @@ export default function RootLayout({
 
         {/* Google Analytics */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-DRGNP15GMS"
+          src="https://www.googletagmanager.com/gtag/js?id=G-36F224616N"
           strategy="afterInteractive"
         />
 
         <Script id="ga-script" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', 'G-DRGNP15GMS');
-          `}
+        {`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-36F224616N');
+        `}
         </Script>
 
         <ClerkProvider>
