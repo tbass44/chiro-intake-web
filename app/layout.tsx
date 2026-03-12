@@ -55,29 +55,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${notoSansJP.variable}`}>
-        <head>
-          {/* Google Analytics */}
-          <Script
-            src="https://www.googletagmanager.com/gtag/js?id=G-DRGNP15GMS"
-            strategy="afterInteractive"
-          />
-          <Script id="ga-script" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-DRGNP15GMS');
-            `}
-          </Script>
-        </head>
-        <body className={`${inter.className} font-sans`}>
-          <ClerkProvider>
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-              {children}
-            </div>
-            <Toaster position="top-right" />
-          </ClerkProvider>
-        </body>
-      </html>
+      <body className={`${inter.className} font-sans`}>
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-DRGNP15GMS"
+          strategy="afterInteractive"
+        />
+
+        <Script id="ga-script" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-DRGNP15GMS');
+          `}
+        </Script>
+
+        <ClerkProvider>
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+            {children}
+          </div>
+          <Toaster position="top-right" />
+        </ClerkProvider>
+
+      </body>
+    </html>
   );
 }

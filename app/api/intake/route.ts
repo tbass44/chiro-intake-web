@@ -1,12 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/*
+Next.jsのAPIルート
+
+POST /api/intake
+
+というURLにアクセスされたときに
+この関数が実行される
+*/
 export async function POST(request: NextRequest) {
   try {
+    /*
+    フロントエンドから送られてきたJSONデータを取得
+
+    例
+    {
+      name: "山田",
+      symptom: "腰痛"
+    }
+    */
     const body = await request.json();
     
     // Get the FastAPI backend URL from environment variables
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
+    /*
+    環境変数が設定されていない場合はエラー
+    */
     if (!backendUrl) {
       console.error('NEXT_PUBLIC_API_BASE_URL is not configured');
       return NextResponse.json(
@@ -18,22 +38,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /*
+    FastAPIのエンドポイント
+
+    例
+    https://api.example.com/intake
+    */
     const apiUrl = `${backendUrl}/intake`;
     console.log('Proxying request to:', apiUrl);
 
-    // Forward the request to the FastAPI backend
+    /*
+    FastAPIへリクエストを転送
+
+    fetch = HTTPリクエストを送る関数
+    */
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
+
+        // JSON送信
         'Content-Type': 'application/json',
-        // Forward authorization headers if present
+
+        /*
+        Authorizationヘッダーがあれば
+        そのままFastAPIに転送
+
+        ログイン認証などに使う
+        */
         ...(request.headers.get('authorization') && {
           'Authorization': request.headers.get('authorization')!
         }),
       },
+
+      // フロントから受け取ったデータをそのまま送る
       body: JSON.stringify(body),
     });
 
+
+    /*
+    FastAPIがエラーだった場合
+    */
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Backend error: ${response.status} - ${errorText}`);
@@ -42,6 +86,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
+
+          // ユーザー向けのメッセージ
           message: response.status === 404 
             ? 'サーバーに接続できませんでした。しばらく時間をおいてから再度お試しください。'
             : 'サーバーエラーが発生しました。管理者にお問い合わせください。'
@@ -50,19 +96,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse the response from the backend
+    /*
+    FastAPIのレスポンスを取得
+    */
     const data = await response.json();
     
-    // Return the backend response
+    /*
+    フロントへ結果を返す
+    */
     return NextResponse.json({
       success: true,
+      // FastAPIが返したsummaryを表示
       message: data.summary ?? 'フォームを送信しました。',
     });
 
   } catch (error) {
     console.error('API route error:', error);
     
-    // Handle network errors or JSON parsing errors
+    /*
+    ネットワークエラーなど
+    */
     return NextResponse.json(
       { 
         success: false, 
@@ -75,13 +128,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle preflight requests for CORS
+/*
+CORS対応
+
+ブラウザが送る
+OPTIONSリクエスト（事前確認）に対応
+*/
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
     headers: {
+      // どこからのアクセスでも許可
       'Access-Control-Allow-Origin': '*',
+
+      // 許可するHTTPメソッド
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
+
+      // 許可するヘッダー
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
